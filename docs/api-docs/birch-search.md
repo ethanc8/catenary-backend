@@ -2,7 +2,7 @@
 
 **Public endpoint:** `https://birch.catenarymaps.org/` (there are additional domain names pointing to the same server and port, in order to allow concurrent requests in catenary-web)
 
-**Localhost endpoint:** `https://127.0.0.1:17419/`
+**Localhost endpoint:** `https://localhost:17419/`
 
 **Source:** Registered in [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs); implementations in [`src/birch/stop_preview.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/stop_preview.rs), [`src/birch/osm_station_lookup.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/osm_station_lookup.rs), [`src/birch/osm_station_search.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/osm_station_search.rs), [`src/birch/osm_station_preview.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/osm_station_preview.rs), and [`src/birch/text_search/mod.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/text_search/mod.rs).
 

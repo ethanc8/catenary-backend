@@ -2,7 +2,7 @@
 
 **Public endpoint:** `https://cypress.catenarymaps.org/`, `https://cypress1.catenarymaps.org/`, `https://cypress2.catenarymaps.org/`
 
-**Localhost endpoint:** `https://127.0.0.1:3000/`
+**Localhost endpoint:** `https://localhost:3000/`
 
 **Repository:** [`catenarytransit/cypress`](https://github.com/catenarytransit/cypress)
 

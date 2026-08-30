@@ -1,30 +1,59 @@
 # Catenary Backend API Documentation
 
-This directory documents every HTTP and WebSocket API that `catenary-backend` exposes. It is meant to be useful both to people building against these APIs from outside the project ("external users": app/frontend authors, third-party integrators) and to people working on Catenary itself ("internal users": other services, ops, future maintainers).
+This directory documents every HTTP and WebSocket API that `catenary-backend` exposes.
 
 These docs describe **behavior as implemented**, including bugs, inconsistencies, and footguns discovered while reading the source. Where something looks like a bug rather than intended behavior, it's called out explicitly rather than silently normalized. Source links point at `main` on GitHub; if the code has moved since these docs were written, use the link as a starting point and search the file for the function/route name.
+
+## Navigation
+
+- [**Shared data types**](types-reference.md) — shared data types (`Route`, `Stop`, `Agency`, `AspenisedVehiclePosition`, etc.) referenced by multiple endpoints, documented once instead of repeated everywhere.
+
+
+### Schedules, departures, trips
+
+- [**Birch schedule data**](birch-schedule-data.md) — static GTFS schedule data: chateaus, routes, agencies, feed ingestion metadata, blocks/vehicle-blocks.
+- [**Birch departures**](birch-departures.md) — scheduled + realtime departure boards for a stop, an OSM station, or a geographic point.
+- [**Ramonda** (WebSockets)](ramonda-websocket-api.md) — the standalone trip-subscription WebSocket service.
+- [**Birch realtime**](birch-realtime.md) — live vehicle positions, trip detail/refresh, raw GTFS-RT feed passthrough, alerts.
+
+### Search
+
+- [**Birch search**](birch-search.md) — Look up GTFS stops and OSM stations
+- [**Cypress geocoding API**](cypress-geocoding-api.md) — OSM geocoding, similar to Nominatim
+
+### Map rendering
+
+- [**Birch maps and tiles**](birch-maps-and-tiles.md) — shapes (as GeoJSON/polyline or Mapbox Vector Tiles), stop/station tiles, route geometry export.
+- [**Birch vehicle history**](birch-vehicle-history.md) — historical vehicle-to-trip assignment records.
+- [**Spruce** (WebSockets)](spruce-websocket-api.md) — the live-map WebSocket service (`/ws/live`).
+- [**Harebell tile server**](harebell-tile-server.md) — experimental static vector-tile file server, designed for use with LOOMed maps
+
+
+### Miscellaneous
+
+- [**Birch admin API**](birch-admin-api.md) — realtime feed credential management.
+- [**Tulip**](tulip-api.md) — the tulip admin/debug portal's API (separate repository).
+- [**Birch proxies and miscellaneous**](birch-proxies-and-misc.md) — third-party proxies (Amtrak, CTA, CAL FIRE, Metrolink, OpenRailwayMap, terrain tiles, Watch Duty) and small utility endpoints.
 
 ## The four servers
 
 `catenary-backend` is a Cargo workspace that builds several binaries. Four of them expose network APIs over HTTP or WebSockets; the rest (`maple`, `aspen`, `alpenrose`, `avens`, etc.) are data-ingestion workers, or expose only an internal [tarpc](https://github.com/google/tarpc) RPC protocol over raw TCP (not HTTP/WebSockets, so out of scope for this doc set — see "Internal RPC" below).
 
-| Server | Binary / entry point | Listens on (source) | Public host (if known) | What it's for |
+| Server | Binary / entry point | Localhost URL | Production URL | What it's for |
 |---|---|---|---|---|
-| **birch** | [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs) | `127.0.0.1:17419` | `birch.catenarymaps.org` (plus sharded subdomains for some tile layers, see [birch-maps-and-tiles.md](birch-maps-and-tiles.md)) | The main REST/JSON/GeoJSON/MVT HTTP API — static GTFS schedule data, map tiles, search, departures, realtime vehicle/trip/alert data, vehicle history, admin key management, misc proxies. |
-| **spruce** | [`src/spruce/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/spruce/main.rs) | `127.0.0.1:52771` | not yet documented — ask the Catenary team | WebSocket API for live map data: per-trip realtime subscriptions, viewport-based live vehicle locations, trajectories, and nearby-departures. Also serves one plain HTTP endpoint. |
-| **ramonda** | [`src/ramonda/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/ramonda/main.rs) | `127.0.0.1:52772` (configurable) | not yet documented | A second, independent WebSocket service for per-trip realtime subscriptions only (no map/trajectory support). Actively used in production, but is **not** simply a "lite" version of spruce — see [ramonda-websocket-api.md](ramonda-websocket-api.md) for exactly how its protocol differs. |
-| **harebell** (+ **globeflower**) | [`src/harebell/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/harebell/main.rs) | `127.0.0.1:8080` (default; CLI flag) | not yet documented | A minimal static file server for pre-generated Mapbox Vector Tiles (route-line rendering). `globeflower` is the offline tile-generation tool; `harebell` just serves the files it produces. |
-
-**Note on production hostnames:** all four binaries bind to loopback only in source — there's no domain/TLS/reverse-proxy configuration in this repo. `birch.catenarymaps.org` is inferred from tile-cache URLs embedded in birch's own responses (see the tile docs); the public hostnames for spruce/ramonda/harebell aren't derivable from source and should be confirmed with whoever operates the production deployment.
+| **birch** | [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs) | `localhost:17419` | `birch.catenarymaps.org` | The main REST/JSON/GeoJSON/MVT HTTP API — static GTFS schedule data, map tiles, search, departures, realtime vehicle/trip/alert data, vehicle history, admin key management, misc proxies. |
+| **spruce** | [`src/spruce/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/spruce/main.rs) | `localhost:52771` | `spruce.catenarymaps.org` | WebSocket API for live map data: per-trip realtime subscriptions, viewport-based live vehicle locations, trajectories, and nearby-departures. Also serves one plain HTTP endpoint. |
+| **ramonda** | [`src/ramonda/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/ramonda/main.rs) | `localhost:52772`| `ramonda.catenarymaps.org` | A second, independent WebSocket service for per-trip realtime subscriptions only (no map/trajectory support). Actively used in production, but is **not** simply a "lite" version of spruce — see [ramonda-websocket-api.md](ramonda-websocket-api.md) for exactly how its protocol differs. |
+| **harebell** (+ **globeflower**) | [`src/harebell/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/harebell/main.rs) | `localhost:8080` | not in production | A minimal static file server for pre-generated Mapbox Vector Tiles (route-line rendering). `globeflower` is the offline tile-generation tool; `harebell` just serves the files it produces. |
 
 ### Related services in other repositories
 
 Two more services are documented here for convenience even though they live in **separate repositories**, not in `catenary-backend`. They're unrelated codebases (different languages/frameworks, no shared code with birch/spruce/ramonda/harebell) — mentioned here because they're part of the same production system and a consumer of "the Catenary API" may reasonably need to know about them too.
 
-| Service | Repository | Production URL | What it's for |
-|---|---|---|---|
-| **tulip** | [`catenarytransit/tulip`](https://github.com/catenarytransit/tulip) | `https://tulip.catenarymaps.org` | A Leptos admin/debug web portal. Its API surface is a small number of Leptos server functions that mostly proxy birch's admin/debug endpoints — see [tulip-api.md](tulip-api.md). Two of its endpoints relay birch admin credentials; read the security note there before treating it as a public API. |
-| **cypress** | [`catenarytransit/cypress`](https://github.com/catenarytransit/cypress) | not yet confirmed | A standalone geocoding service (forward/reverse search, autocomplete, place details) over OpenStreetMap data, with its own from-scratch bigram/FST search index and ScyllaDB storage — no Elasticsearch, no shared code with birch's search endpoints. See [cypress-geocoding-api.md](cypress-geocoding-api.md). |
+| Service | Repository | Localhost URL | Production URL | What it's for |
+|---|---|---|---|---|
+| **tulip** | [`catenarytransit/tulip`](https://github.com/catenarytransit/tulip) | `localhost:7914` | `tulip.catenarymaps.org` | A Leptos admin/debug web portal. Its API surface is a small number of Leptos server functions that mostly proxy birch's admin/debug endpoints — see [tulip-api.md](tulip-api.md). Two of its endpoints relay birch admin credentials; read the security note there before treating it as a public API. |
+| **cypress** | [`catenarytransit/cypress`](https://github.com/catenarytransit/cypress) | `localhost:3000` | `cypress.catenarymaps.org` | A standalone geocoding service (forward/reverse search, autocomplete, place details) over OpenStreetMap data, with its own from-scratch bigram/FST search index and ScyllaDB storage — no Elasticsearch, no shared code with birch's search endpoints. See [cypress-geocoding-api.md](cypress-geocoding-api.md). |
 
 ### Internal RPC (out of scope, but useful context)
 
@@ -46,23 +75,8 @@ These apply across most or all of the endpoints documented in this folder. Indiv
 - **Panics on malformed/edge-case input are common.** Many handlers use bare `.unwrap()` on database results, header parsing, or RPC responses. Actix turns a panicked handler into a generic `500` with no useful body, which is indistinguishable from other server errors. Where a specific input is known to trigger this, it's called out per-endpoint.
 - **Duplicate/divergent implementations exist for conceptually-identical concepts.** For example, three or four independently-defined `OsmStationInfo`-shaped structs exist across different search endpoints with different field subsets, and `connections_lookup` (the "nearby connecting routes" algorithm) has two independently-maintained copies (one in the `birch` binary, one in the `catenary` library crate). Don't assume the same-looking data from two different endpoints has the exact same shape — each endpoint doc calls out its own response shape explicitly.
 
-## Where to find what
-
-- [birch-schedule-data.md](birch-schedule-data.md) — static GTFS schedule data: chateaus, routes, agencies, feed ingestion metadata, blocks/vehicle-blocks.
-- [birch-maps-and-tiles.md](birch-maps-and-tiles.md) — shapes (as GeoJSON/polyline or Mapbox Vector Tiles), stop/station tiles, route geometry export.
-- [birch-search.md](birch-search.md) — stop lookup/preview, OSM station lookup/search/preview, general text search.
-- [birch-departures.md](birch-departures.md) — scheduled + realtime departure boards for a stop, an OSM station, or a geographic point.
-- [birch-realtime.md](birch-realtime.md) — live vehicle positions, trip detail/refresh, raw GTFS-RT feed passthrough, alerts.
-- [birch-vehicle-history.md](birch-vehicle-history.md) — historical vehicle-to-trip assignment records.
-- [birch-admin-api.md](birch-admin-api.md) — realtime feed credential management. **Internal/admin only — read the security notes before exposing this publicly.**
-- [birch-proxies-and-misc.md](birch-proxies-and-misc.md) — third-party proxies (Amtrak, CTA, CAL FIRE, Metrolink, OpenRailwayMap, terrain tiles, Watch Duty) and small utility endpoints.
-- [spruce-websocket-api.md](spruce-websocket-api.md) — the live-map WebSocket protocol (`/ws/trip`, `/ws/live`).
-- [ramonda-websocket-api.md](ramonda-websocket-api.md) — the standalone trip-subscription WebSocket protocol.
-- [harebell-tile-server.md](harebell-tile-server.md) — static vector-tile file server.
-- [types-reference.md](types-reference.md) — shared data types (`Route`, `Stop`, `Agency`, `AspenisedVehiclePosition`, etc.) referenced by multiple endpoints, documented once instead of repeated everywhere.
-- [tulip-api.md](tulip-api.md) — the tulip admin/debug portal's API (separate repository).
-- [cypress-geocoding-api.md](cypress-geocoding-api.md) — the cypress geocoding service's API (separate repository).
-
 ## A note on how this was written
+
+This documentation was written by Claude-4.6-Sonnet on 2026-08-30, and then had human-written changes after then.
 
 These docs were produced by reading the `catenary-backend` source directly (not by testing a live deployment), current as of commit `89cf84e6` (2026-08-30). Response shapes and status codes are as implemented; a few details flagged as "not fully verifiable from source alone" (e.g. the exact JSON key names `geo::Rect<f64>` serializes to) should be double-checked against a live response before being treated as a hard contract. If you find a discrepancy, it's more likely the docs are stale than the code is wrong — please update both.

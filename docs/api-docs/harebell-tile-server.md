@@ -4,7 +4,7 @@ This is an experimental service, which will in future provide (using `globeflowe
 
 **Public endpoint:** Not deployed.
 
-**Localhost endpoint:** `https://127.0.0.1:8080/`
+**Localhost endpoint:** `https://localhost:8080/`
 
 **Source:** [`src/harebell/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/harebell/main.rs) (CLI entry point) and [`src/harebell/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/harebell/server.rs) (the actual HTTP handler). 
 
@@ -12,7 +12,7 @@ The companion `globeflower` binary ([`src/globeflower/main.rs`](https://github.c
 
 ## Starting the server
 
-`harebell serve --address <addr> --port <port>` (defaults `127.0.0.1:8080`). It serves whatever static tiles already exist under `./tiles_output/` relative to its working directory — it does **not** generate tiles itself; that's `globeflower export`'s job, run offline ahead of time.
+`harebell serve --address <addr> --port <port>` (defaults `localhost:8080`). It serves whatever static tiles already exist under `./tiles_output/` relative to its working directory — it does **not** generate tiles itself; that's `globeflower export`'s job, run offline ahead of time.
 
 ## `GET /tiles/{z}/{x}/{y}.pbf`
 

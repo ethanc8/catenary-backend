@@ -2,7 +2,7 @@
 
 **Public endpoint:** `wss://ramonda.catenarymaps.org/`
 
-**Localhost endpoint:** `ws://127.0.0.1:52772/`
+**Localhost endpoint:** `ws://localhost:52772/`
 
 **Source:** [`src/ramonda/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/ramonda/main.rs)
 

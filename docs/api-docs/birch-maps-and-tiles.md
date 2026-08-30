@@ -2,7 +2,7 @@
 
 **Public endpoint:** `https://birch.catenarymaps.org/` (there are additional domain names pointing to the same server and port, in order to allow concurrent requests in catenary-web)
 
-**Localhost endpoint:** `https://127.0.0.1:17419/`
+**Localhost endpoint:** `https://localhost:17419/`
 
 **Source:** Endpoints registered in [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs); implementations in [`src/birch/shapes.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/shapes.rs), [`src/birch/postgis_download.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/postgis_download.rs), and [`src/birch/export_route_geom.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/export_route_geom.rs).
 

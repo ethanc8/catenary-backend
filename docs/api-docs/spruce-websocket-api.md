@@ -2,7 +2,7 @@
 
 **Public endpoint:** `wss://spruce.catenarymaps.org/`
 
-**Localhost endpoint:** `ws://127.0.0.1:52771/`
+**Localhost endpoint:** `ws://localhost:52771/`
 
 **Source:** [`src/spruce/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/spruce/main.rs)
 

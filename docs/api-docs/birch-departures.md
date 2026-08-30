@@ -2,7 +2,7 @@
 
 **Public endpoint:** `https://birch.catenarymaps.org/` (there are additional domain names pointing to the same server and port, in order to allow concurrent requests in catenary-web)
 
-**Localhost endpoint:** `https://127.0.0.1:17419/`
+**Localhost endpoint:** `https://localhost:17419/`
 
 **Source:** Registered in [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs); implementations in [`src/birch/departures_at_stop.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/departures_at_stop.rs), [`src/birch/departures_at_osm_station.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/departures_at_osm_station.rs), and (for the geographic version) [`src/birch/nearby_departuresv3.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/nearby_departuresv3.rs). `src/birch/departures_shared.rs` is a shared internal helper module with no HTTP routes of its own.
 
