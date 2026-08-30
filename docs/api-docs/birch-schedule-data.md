@@ -1,6 +1,10 @@
 # birch: static schedule data
 
-Server: **birch**, `http://127.0.0.1:17419` (production: `birch.catenarymaps.org`, unconfirmed — see [README.md](README.md)). All endpoints below are `GET` unless noted, and are registered in [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs).
+**Public endpoint:** `https://birch.catenarymaps.org/` (there are additional domain names pointing to the same server and port, in order to allow concurrent requests in catenary-web)
+
+**Localhost endpoint:** `https://127.0.0.1:17419/`
+
+**Source:** [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs)
 
 These endpoints serve GTFS static schedule data straight from Postgres. None of them require authentication or set a `Cache-Control` header unless stated. See [types-reference.md](types-reference.md) for the shared `Route`, `Agency`, `Chateau`, etc. types.
 

@@ -1,6 +1,10 @@
 # birch: departures (schedule + realtime)
 
-Server: **birch**, `http://127.0.0.1:17419`. Registered in [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs); implementations in [`src/birch/departures_at_stop.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/departures_at_stop.rs), [`src/birch/departures_at_osm_station.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/departures_at_osm_station.rs), and (for the geographic version) [`src/birch/nearby_departuresv3.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/nearby_departuresv3.rs). `src/birch/departures_shared.rs` is a shared internal helper module with no HTTP routes of its own.
+**Public endpoint:** `https://birch.catenarymaps.org/` (there are additional domain names pointing to the same server and port, in order to allow concurrent requests in catenary-web)
+
+**Localhost endpoint:** `https://127.0.0.1:17419/`
+
+**Source:** Registered in [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs); implementations in [`src/birch/departures_at_stop.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/departures_at_stop.rs), [`src/birch/departures_at_osm_station.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/departures_at_osm_station.rs), and (for the geographic version) [`src/birch/nearby_departuresv3.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/nearby_departuresv3.rs). `src/birch/departures_shared.rs` is a shared internal helper module with no HTTP routes of its own.
 
 All three endpoints below merge GTFS static schedule data with live GTFS-Realtime data fetched from the internal `aspen` service per chateau, opening a **new tarpc connection per chateau per request** (no connection pooling for this endpoint family — a latency consideration under load). None set a `Cache-Control` header.
 

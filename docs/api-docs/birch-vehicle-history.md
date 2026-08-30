@@ -1,6 +1,10 @@
 # birch: vehicle history
 
-Server: **birch**, `http://127.0.0.1:17419`. Source: [`src/birch/vehicle_history_lookup.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/vehicle_history_lookup.rs). Registered in [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs).
+**Public endpoint:** `https://birch.catenarymaps.org/` (there are additional domain names pointing to the same server and port, in order to allow concurrent requests in catenary-web)
+
+**Localhost endpoint:** `https://127.0.0.1:17419/`
+
+**Source:** [`src/birch/vehicle_history_lookup.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/vehicle_history_lookup.rs). Registered in [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs).
 
 Both endpoints expose **historical** (already-completed) vehicle-to-trip assignment records — "which physical vehicle ran which trip/route on which date" — backed by the `basic_vehicle_history` Postgres table (see [types-reference.md](types-reference.md) for `BasicVehicleHistory`), enriched with static-GTFS trip/route metadata. Neither talks to the realtime backend. Neither sets a `Cache-Control` header. Neither has pagination — a wide or unspecified date range can return unbounded rows.
 

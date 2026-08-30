@@ -1,6 +1,8 @@
 # tulip: admin/debug portal API
 
-**Repository:** [`catenarytransit/tulip`](https://github.com/catenarytransit/tulip) — a separate repository from `catenary-backend`, checked out as a sibling directory (`../tulip`) in this workspace. Production: `https://tulip.catenarymaps.org`. Source links below point at `main` on that repo.
+**Public endpoint:** `https://tulip.catenarymaps.org/`
+
+**Repository:** [`catenarytransit/tulip`](https://github.com/catenarytransit/tulip)
 
 Tulip ("Transport Unification Live Infrastructure Portal") is a [Leptos](https://leptos.dev) server-rendered Rust/WASM web app — both a human-browsable admin/debug UI and, incidentally, the source of a small number of JSON API endpoints. **It is not a general-purpose public API** — every endpoint here exists to back one specific admin page, and two of them (`load_realtime_keys`, and the unnamed `submit_data` function) directly relay Catenary admin credentials to birch's admin key-management module (see [birch-admin-api.md](birch-admin-api.md)) — read the security note below before treating this as safe to call from untrusted contexts.
 

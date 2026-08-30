@@ -1,6 +1,10 @@
 # birch: third-party proxies and small utility endpoints
 
-Server: **birch**, `http://127.0.0.1:17419`. All registered in [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs). None require authentication; none set `Cache-Control` unless noted.
+**Public endpoint:** `https://birch.catenarymaps.org/` (there are additional domain names pointing to the same server and port, in order to allow concurrent requests in catenary-web)
+
+**Localhost endpoint:** `https://127.0.0.1:17419/`
+
+**Source:** All registered in [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs). None require authentication; none set `Cache-Control` unless noted.
 
 ## Third-party data proxies
 

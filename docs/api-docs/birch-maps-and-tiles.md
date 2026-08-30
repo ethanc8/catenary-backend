@@ -1,6 +1,10 @@
 # birch: shapes, map tiles, and route geometry export
 
-Server: **birch**, `http://127.0.0.1:17419`. Endpoints registered in [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs); implementations in [`src/birch/shapes.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/shapes.rs), [`src/birch/postgis_download.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/postgis_download.rs), and [`src/birch/export_route_geom.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/export_route_geom.rs).
+**Public endpoint:** `https://birch.catenarymaps.org/` (there are additional domain names pointing to the same server and port, in order to allow concurrent requests in catenary-web)
+
+**Localhost endpoint:** `https://127.0.0.1:17419/`
+
+**Source:** Endpoints registered in [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs); implementations in [`src/birch/shapes.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/shapes.rs), [`src/birch/postgis_download.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/postgis_download.rs), and [`src/birch/export_route_geom.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/export_route_geom.rs).
 
 All Mapbox Vector Tile (MVT) endpoints below are generated with raw PostGIS SQL (`ST_AsMVT`/`ST_AsMVTGeom`), use the standard **XYZ slippy-map tile scheme** (Web Mercator EPSG:3857, origin top-left), and put every feature into a single MVT layer named literally `"data"` regardless of which logical endpoint served it.
 

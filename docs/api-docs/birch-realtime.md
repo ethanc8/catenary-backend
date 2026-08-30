@@ -1,6 +1,10 @@
 # birch: live realtime data
 
-Server: **birch**, `http://127.0.0.1:17419`. Registered in [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs); implementations in [`src/birch/aspenised_data_over_https.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/aspenised_data_over_https.rs), [`src/birch/get_vehicle_trip_information.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/get_vehicle_trip_information.rs), [`src/birch/vehicle_api.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/vehicle_api.rs), [`src/birch/gtfs_rt_api.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/gtfs_rt_api.rs), and [`src/birch/alerts.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/alerts.rs).
+**Public endpoint:** `https://birch.catenarymaps.org/` (there are additional domain names pointing to the same server and port, in order to allow concurrent requests in catenary-web)
+
+**Localhost endpoint:** `https://127.0.0.1:17419/`
+
+**Source:** Registered in [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs); implementations in [`src/birch/aspenised_data_over_https.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/aspenised_data_over_https.rs), [`src/birch/get_vehicle_trip_information.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/get_vehicle_trip_information.rs), [`src/birch/vehicle_api.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/vehicle_api.rs), [`src/birch/gtfs_rt_api.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/gtfs_rt_api.rs), and [`src/birch/alerts.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/alerts.rs).
 
 All of these read from the in-memory realtime state held by the internal `aspen` service, reached over tarpc keyed by **chateau ID** (discoverable via `GET /getchateaus`, see [birch-schedule-data.md](birch-schedule-data.md)) — except `/gtfs_rt`, which is keyed by a **separate `feed_id` namespace** (an individual realtime feed URL's identity, not a chateau). See [types-reference.md](types-reference.md) for the `Aspenised*` type definitions referenced throughout.
 

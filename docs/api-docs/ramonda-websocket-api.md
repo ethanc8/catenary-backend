@@ -1,8 +1,12 @@
 # ramonda: standalone trip-subscription WebSocket API
 
-Server: **ramonda**, `ws://127.0.0.1:52772` by default (configurable via `PORT` env var or config; production hostname not yet confirmed — see [README.md](README.md)). Source: [`src/ramonda/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/ramonda/main.rs) — the entire service is one file.
+**Public endpoint:** `wss://ramonda.catenarymaps.org/`
 
-This is a **second, independent** WebSocket service for per-trip realtime subscriptions, covering a subset of what spruce's `/ws/trip` does (see [spruce-websocket-api.md](spruce-websocket-api.md)) — it has no map/viewport or trajectory support at all. It is actively used in production; it is not simply a stripped-down "lite" alternative to spruce, so don't assume it will be deprecated or that spruce's `/ws/trip` is a strict superset you can swap in without checking both call sites.
+**Localhost endpoint:** `ws://127.0.0.1:52772/`
+
+**Source:** [`src/ramonda/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/ramonda/main.rs)
+
+This is the WebSocket service for per-trip realtime subscriptions. It superseeds [spruce `/ws/trip`](spruce-websocket-api.md), in order to split the load across multiple services.
 
 ## Route
 

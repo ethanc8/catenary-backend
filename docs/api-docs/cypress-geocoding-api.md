@@ -1,6 +1,10 @@
 # cypress: geocoding API
 
-**Repository:** [`catenarytransit/cypress`](https://github.com/catenarytransit/cypress) — a separate repository from `catenary-backend`, checked out as a sibling directory (`../cypress`) in this workspace. Source links below point at `main` on that repo.
+**Public endpoint:** `https://cypress.catenarymaps.org/`, `https://cypress1.catenarymaps.org/`, `https://cypress2.catenarymaps.org/`
+
+**Localhost endpoint:** `https://127.0.0.1:3000/`
+
+**Repository:** [`catenarytransit/cypress`](https://github.com/catenarytransit/cypress)
 
 Cypress is a standalone Rust geocoding service (forward search, reverse geocoding, autocomplete, place details) built on OpenStreetMap data — a Pelias/Nominatim-style geocoder, but with its own from-scratch search engine: a memory-mapped, zero-copy bigram + FST index (no Elasticsearch dependency for queries) backed by ScyllaDB for full record storage. It is not wired into `catenary-backend` and doesn't share code with birch's `/text_search_v1`/`/osm_station_search` (see [birch-search.md](birch-search.md)), though it appears intended to serve a similar purpose for general place search.
 

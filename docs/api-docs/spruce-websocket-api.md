@@ -1,12 +1,18 @@
 # spruce: live map WebSocket API
 
-Server: **spruce**, `ws://127.0.0.1:52771` (production hostname not yet confirmed — see [README.md](README.md)). Entry point: [`src/spruce/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/spruce/main.rs). This is the WebSocket API a live transit map frontend uses — per-trip live updates, viewport-based live vehicle locations, trajectories, and nearby-departures — built on `actix` + `actix-web-actors`.
+**Public endpoint:** `wss://spruce.catenarymaps.org/`
+
+**Localhost endpoint:** `ws://127.0.0.1:52771/`
+
+**Source:** [`src/spruce/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/spruce/main.rs)
+
+This is the WebSocket API a live transit map frontend uses — per-trip live updates, viewport-based live vehicle locations, trajectories, and nearby-departures — built on `actix` + `actix-web-actors`.
 
 ## Routes
 
 | Route | Actor | Purpose |
 |---|---|---|
-| `GET /ws/trip`, `/ws/trip/` | `TripWebSocket` ([`src/spruce/trip_websocket.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/spruce/trip_websocket.rs)) | Subscribe to live updates for specific trips. |
+| `GET /ws/trip`, `/ws/trip/` | `TripWebSocket` ([`src/spruce/trip_websocket.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/spruce/trip_websocket.rs)) | (Deprecated) Subscribe to live updates for specific trips. |
 | `GET /ws/`, `/ws/live`, `/ws/live/` | `LiveLocationsWebSocket` ([`src/spruce/live_websocket.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/spruce/live_websocket.rs)) | Viewport-based live vehicle locations + trajectories, for the map view itself. |
 | `GET /nearbydeparturesfromcoordsv3` | plain HTTP (not a WebSocket) | Same feature as birch's identically-named endpoint — see [birch-departures.md](birch-departures.md#get-nearbydeparturesfromcoordsv3), independently implemented here. |
 | `GET /` | plain HTTP | `"Hello World from Catenary Spruce! <rfc3339 timestamp>"` — a liveness check, not part of the API. |
@@ -53,6 +59,8 @@ Sending a message type not valid for the endpoint you're connected to — or sen
 **Footgun:** `map_update` is a "newtype" enum variant, so its JSON does **not** nest under a `data` key the way `initial_trip`/`update_trip` do — `BulkFetchResponseV2`'s own fields (`chateaus: {...}`) are merged straight into the top-level message object. Client code that generically looks for `msg.data` on every message type will break specifically for `map_update`.
 
 ## `/ws/trip` — per-trip subscriptions
+
+**Deprecated**. Use [ramonda](./ramonda-websocket-api.md) instead.
 
 - Multiple concurrent trip subscriptions are supported (keyed internally by `(chateau, QueryTripInformationParams)`); there's no limit enforced.
 - On `subscribe_trip`, the server immediately fetches the full trip detail (schedule + realtime, via `fetch_trip_information`) and replies with `initial_trip` or `error`. Re-subscribing to an already-subscribed key just re-fetches and resends `initial_trip` — it does not error or dedupe, so sending `subscribe_trip` repeatedly for the same trip is wasteful (each call is a full DB+RPC round trip) but not rejected.

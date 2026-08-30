@@ -1,6 +1,10 @@
 # birch: realtime feed credential management (internal/admin only)
 
-Server: **birch**, `http://127.0.0.1:17419`. Source: [`src/birch/api_key_management.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/api_key_management.rs). Registered in [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs).
+**Public endpoint:** `https://birch.catenarymaps.org/` (there are additional domain names pointing to the same server and port, in order to allow concurrent requests in catenary-web)
+
+**Localhost endpoint:** `https://127.0.0.1:17419/`
+
+**Source:** [`src/birch/api_key_management.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/api_key_management.rs). Registered in [`src/birch/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/server.rs).
 
 ## ⚠️ Security notes — read before exposing this publicly
 

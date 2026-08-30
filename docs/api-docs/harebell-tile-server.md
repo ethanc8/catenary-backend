@@ -1,8 +1,14 @@
 # harebell: static route-line tile server
 
-Server: **harebell**, default `http://127.0.0.1:8080` (host/port are CLI flags, `--address`/`--port`; production hostname not yet confirmed — see [README.md](README.md)). Source: [`src/harebell/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/harebell/main.rs) (CLI entry point) and [`src/harebell/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/harebell/server.rs) (the actual HTTP handler). The companion `globeflower` binary ([`src/globeflower/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/globeflower/main.rs)) is an **offline CLI tool**, not a network service — it builds a routing/rendering graph from OSM + GTFS data and pre-generates the `.pbf` tile files that harebell then serves. It's mentioned here only for context; it has no HTTP API of its own.
+This is an experimental service, which will in future provide (using `globeflower`) a prebuilt map of railway (metro, tramway, mainline railway) routes that has been ["LOOMed"](https://github.com/ad-freiburg/loom), i.e. overlapping routes are drawn as parallel lines with optimized line ordering.
 
-This is one of the servers behind the "new colours for Long Beach" style route-line map rendering work.
+**Public endpoint:** Not deployed.
+
+**Localhost endpoint:** `https://127.0.0.1:8080/`
+
+**Source:** [`src/harebell/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/harebell/main.rs) (CLI entry point) and [`src/harebell/server.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/harebell/server.rs) (the actual HTTP handler). 
+
+The companion `globeflower` binary ([`src/globeflower/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/globeflower/main.rs)) is an **offline CLI tool**, not a network service — it builds a routing/rendering graph from OSM + GTFS data and pre-generates the `.pbf` tile files that harebell then serves. It's mentioned here only for context; it has no HTTP API of its own.
 
 ## Starting the server
 
