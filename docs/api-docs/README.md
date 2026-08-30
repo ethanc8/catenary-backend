@@ -17,6 +17,15 @@ These docs describe **behavior as implemented**, including bugs, inconsistencies
 
 **Note on production hostnames:** all four binaries bind to loopback only in source — there's no domain/TLS/reverse-proxy configuration in this repo. `birch.catenarymaps.org` is inferred from tile-cache URLs embedded in birch's own responses (see the tile docs); the public hostnames for spruce/ramonda/harebell aren't derivable from source and should be confirmed with whoever operates the production deployment.
 
+### Related services in other repositories
+
+Two more services are documented here for convenience even though they live in **separate repositories**, not in `catenary-backend`. They're unrelated codebases (different languages/frameworks, no shared code with birch/spruce/ramonda/harebell) — mentioned here because they're part of the same production system and a consumer of "the Catenary API" may reasonably need to know about them too.
+
+| Service | Repository | Production URL | What it's for |
+|---|---|---|---|
+| **tulip** | [`catenarytransit/tulip`](https://github.com/catenarytransit/tulip) | `https://tulip.catenarymaps.org` | A Leptos admin/debug web portal. Its API surface is a small number of Leptos server functions that mostly proxy birch's admin/debug endpoints — see [tulip-api.md](tulip-api.md). Two of its endpoints relay birch admin credentials; read the security note there before treating it as a public API. |
+| **cypress** | [`catenarytransit/cypress`](https://github.com/catenarytransit/cypress) | not yet confirmed | A standalone geocoding service (forward/reverse search, autocomplete, place details) over OpenStreetMap data, with its own from-scratch bigram/FST search index and ScyllaDB storage — no Elasticsearch, no shared code with birch's search endpoints. See [cypress-geocoding-api.md](cypress-geocoding-api.md). |
+
 ### Internal RPC (out of scope, but useful context)
 
 Behind all four servers sits **aspen** ([`src/aspen/main.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/aspen/main.rs)), the process that ingests and holds live GTFS-Realtime data in memory. birch/spruce/ramonda talk to aspen using [tarpc](https://docs.rs/tarpc) over a raw TCP + Bincode transport — not HTTP, not WebSockets — so it isn't documented here. It matters for these docs only because:
@@ -51,6 +60,8 @@ These apply across most or all of the endpoints documented in this folder. Indiv
 - [ramonda-websocket-api.md](ramonda-websocket-api.md) — the standalone trip-subscription WebSocket protocol.
 - [harebell-tile-server.md](harebell-tile-server.md) — static vector-tile file server.
 - [types-reference.md](types-reference.md) — shared data types (`Route`, `Stop`, `Agency`, `AspenisedVehiclePosition`, etc.) referenced by multiple endpoints, documented once instead of repeated everywhere.
+- [tulip-api.md](tulip-api.md) — the tulip admin/debug portal's API (separate repository).
+- [cypress-geocoding-api.md](cypress-geocoding-api.md) — the cypress geocoding service's API (separate repository).
 
 ## A note on how this was written
 
