@@ -16,24 +16,93 @@ All three endpoints below merge GTFS static schedule data with live GTFS-Realtim
 
 - Source: [`src/birch/departures_at_stop.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/departures_at_stop.rs) (line 125)
 - Purpose: Upcoming departure/arrival events for one GTFS stop, its parent station, and same-code stops in other chateaus.
-- Query params: `stop_id: String` (required), `chateau_id: String` (required), `greater_than_time: Option<u64>` (Unix seconds, default `now - 3600`), `less_than_time: Option<u64>` (Unix seconds, default `now + 86400`), `include_shapes: Option<bool>` (default `true`).
-- Response (`application/json`):
-  - `primary: StopInfoResponse`, `parent: Option<StopInfoResponse>`, `children_and_related: Vec<StopInfoResponse>` (**always empty** in this endpoint — populated in the OSM-station version below, but not here).
-  - `StopInfoResponse = { chateau, stop_id, stop_name: string ("" if unset), stop_lat, stop_lon: f64, stop_code: Option<string>, level_id, platform_code, parent_station: Option<string>, children_ids: Vec<string> (always empty here), timezone: string, stop_name_translations: Option<HashMap<string,string>> }`.
-  - `events: Vec<StopEvent>` — see shape below.
-  - `routes: BTreeMap<chateau, BTreeMap<route_id, Route>>`, `agencies: BTreeMap<chateau, BTreeMap<agency_id, Agency>>`, `shapes: BTreeMap<chateau, BTreeMap<shape_id, encoded_polyline>>` (empty if `include_shapes=false`), `alerts: BTreeMap<chateau, BTreeMap<alert_id, AspenisedAlert>>`.
 - Status codes: essentially always `200` on the happy path. **No graceful "stop not found" handling** — an unknown `stop_id`/`chateau_id` indexes into an empty result and **panics** the request (surfaces as a generic `500`), rather than returning a clean `404`.
+
+### Request
+
+Specified as query string parameters.
+
+```rs
+struct NearbyFromStops {
+    stop_id: String,
+    chateau_id: String,
+    // In Unix seconds. Default: now - 3600
+    greater_than_time: Option<u64>,
+    // In Unix seconds. Default: now + 86400
+    less_than_time: Option<u64>,
+    // Default: true
+    include_shapes: Option<bool>,
+}
+```
+
+### Response
+
+Returned as JSON.
+
+```rs
+struct NearbyFromStopsResponse {
+    primary: StopInfoResponse,
+    parent: Option<StopInfoResponse>,
+    // children_and_related is always empty in /departures_at_stop responses.
+    children_and_related: Vec<StopInfoResponse>,
+    events: Vec<StopEvent>,
+    routes: BTreeMap<String, BTreeMap<String, Route>>,
+    pub shapes: BTreeMap<EcoString, BTreeMap<EcoString, String>>,
+    pub alerts: BTreeMap<String, BTreeMap<String, catenary::aspen_dataset::AspenisedAlert>>,
+    pub agencies: BTreeMap<String, BTreeMap<String, Agency>>,
+}
+```
+
+Subordinate types:
+
+```rs
+struct StopEvent {
+    scheduled_arrival: Option<u64>,
+    scheduled_departure: Option<u64>,
+    realtime_arrival: Option<u64>,
+    realtime_departure: Option<u64>,
+    trip_modified: bool,
+    stop_cancelled: bool,
+    trip_cancelled: bool,
+    trip_deleted: bool,
+    trip_id: String,
+    headsign: Option<String>,
+    route_id: String,
+    chateau: String,
+    stop_id: String,
+    uses_primary_stop: bool,
+    unscheduled_trip: bool,
+    moved_info: Option<MovedStopData>,
+    platform_string_realtime: Option<String>,
+    level_id: Option<String>,
+    platform_code: Option<String>,
+    vehicle_number: Option<String>,
+    trip_short_name: Option<CompactString>,
+    service_date: Option<NaiveDate>,
+    last_stop: bool,
+    scheduled_trip_shape_id: Option<CompactString>,
+}
+
+struct StopInfoResponse {
+    chateau: String,
+    stop_id: String,
+    stop_name: String,
+    stop_lat: f64,
+    stop_lon: f64,
+    stop_code: Option<String>,
+    level_id: Option<String>,
+    platform_code: Option<String>,
+    parent_station: Option<String>,
+    children_ids: Vec<String>,
+    timezone: String,
+    stop_name_translations: Option<HashMap<String, String>>,
+}
+```
 
 ## `GET /departures_at_osm_station`
 
 - Source: [`src/birch/departures_at_osm_station.rs`](https://github.com/catenarytransit/catenary-backend/blob/main/src/birch/departures_at_osm_station.rs) (line 143)
 - Purpose: Same concept, keyed by an OSM station ID instead of a GTFS stop_id — aggregates departures across every GTFS stop linked to that OSM station.
-- Query params: `osm_station_id: i64` (required), `greater_than_time`, `less_than_time` (same defaults as above), `include_shapes: Option<bool>` (default `true` — **note:** even when `false`, the shape fetch/encode work still happens server-side and is only stripped from the JSON at the very end, so setting this to `false` does not actually save any work, contrary to what you'd expect).
-- Response: `{ osm_station: Option<OsmStationInfoForResponse>, stops: Vec<StopInfoResponse>, events: Vec<StopEvent>, routes, shapes, alerts (same shape as above), agencies, debug: DeparturesAtOsmStationDebug }`.
-  - `OsmStationInfoForResponse = { osm_id, osm_type, name, name_translations (raw JSON), station_type, railway_tag, mode_type, lat, lon }`.
-  - This file's `StopInfoResponse` is a separately-defined (structurally identical) type — but unlike the `/departures_at_stop` version, **`children_ids` actually is populated here**.
-  - `StopEvent` here has one extra field vs. the other endpoint: `final_station_name: Option<string>` — populated **only** for chateau `"île~de~france~mobilités"` (Paris IDFM), `null` for every other chateau. A hardcoded, undocumented special case.
-  - `debug: DeparturesAtOsmStationDebug = { total_time_ms, etcd_connection_time_ms (always 0 — dead/misleading field), db_connection_time_ms, initial_osm_query_ms, stop_data_fetch_ms, aspen_data_fetch_ms, event_generation_ms }` — always present in every response (not gated behind a debug flag); this exposes internal timing/implementation detail to every caller.
 - **Special response shapes for the "no direct link" case:**
   - If no GTFS stops are directly linked to `osm_station_id`, the server searches for a *nearby* (within 500m), similarly-named (Jaro-Winkler similarity > 0.8) OSM station that *does* have linked stops, and if found, returns a **completely different JSON shape**: `{"redirect_to_osm_station_id": <i64>}`, still `200`. Callers must check for this key and re-query with the new ID.
   - If no redirect candidate is found either, returns the normal response shape with everything empty.
@@ -43,6 +112,112 @@ All three endpoints below merge GTFS static schedule data with live GTFS-Realtim
   - Sort order differs: this endpoint sorts scheduled-time-first (falling back to realtime), while `/departures_at_stop` sorts realtime-time-first (falling back to scheduled) — a delayed trip can appear in a different relative position between the two endpoints for the same physical stop.
   - This endpoint has an extra **dedup pass** that collapses events sharing the same `(scheduled_departure, route_id, headsign)`, preferring whichever has realtime data — this can incorrectly merge two genuinely different trips (e.g. two same-route, same-time, same-headsign trips from different origins on an interlined/branching service) into one event.
   - Realtime stop-matching is more lenient here (matches by `stop_sequence` OR by an underscore-platform-suffix heuristic, e.g. RT `"8833001_7"` matching scheduled `"8833001"`) than `/departures_at_stop` (exact `stop_id` string match only) — the same underlying feed can produce different match results between the two endpoints.
+
+### Request
+
+Specified as query string parameters.
+
+```rs
+pub struct DeparturesAtOsmStationQuery {
+    pub osm_station_id: i64,
+    // In Unix seconds. Default: now - 3600
+    greater_than_time: Option<u64>,
+    // In Unix seconds. Default: now + 86400
+    less_than_time: Option<u64>,
+    // Default: true. Note: even when `false`, the shape fetch/encode work still happens server-side and is only stripped from the JSON at the very end, so setting this to `false` does not actually save any work, contrary to what you'd expect
+    pub include_shapes: Option<bool>,
+}
+```
+
+###
+
+- This file's `StopInfoResponse` is a separately-defined (structurally identical) type — but unlike the `/departures_at_stop` version, **`children_ids` actually is populated here**.
+- `StopEvent` here has one extra field vs. the other endpoint: `final_station_name: Option<string>` — populated **only** for chateau `"île~de~france~mobilités"` (Paris IDFM), `null` for every other chateau. A hardcoded, undocumented special case.
+- `debug: DeparturesAtOsmStationDebug = { total_time_ms, etcd_connection_time_ms (always 0 — dead/misleading field), db_connection_time_ms, initial_osm_query_ms, stop_data_fetch_ms, aspen_data_fetch_ms, event_generation_ms }` — always present in every response (not gated behind a debug flag); this exposes internal timing/implementation detail to every caller.
+
+Returned as JSON.
+
+```rs
+struct DeparturesAtOsmStationResponse {
+    osm_station: Option<OsmStationInfoForResponse>,
+    stops: Vec<StopInfoResponse>,
+    events: Vec<StopEvent>,
+    routes: BTreeMap<String, BTreeMap<String, catenary::models::Route>>,
+    shapes: BTreeMap<EcoString, BTreeMap<EcoString, String>>,
+    alerts: BTreeMap<String, BTreeMap<String, catenary::aspen_dataset::AspenisedAlert>>,
+    agencies: BTreeMap<String, BTreeMap<String, catenary::models::Agency>>,
+    debug: DeparturesAtOsmStationDebug,
+}
+```
+
+Subordinate types:
+
+```rs
+struct StopEvent {
+    scheduled_arrival: Option<u64>,
+    scheduled_departure: Option<u64>,
+    realtime_arrival: Option<u64>,
+    realtime_departure: Option<u64>,
+    trip_modified: bool,
+    stop_cancelled: bool,
+    trip_cancelled: bool,
+    trip_deleted: bool,
+    trip_id: String,
+    headsign: Option<String>,
+    route_id: String,
+    chateau: String,
+    stop_id: String,
+    uses_primary_stop: bool,
+    unscheduled_trip: bool,
+    moved_info: Option<MovedStopData>,
+    platform_string_realtime: Option<String>,
+    level_id: Option<String>,
+    platform_code: Option<String>,
+    vehicle_number: Option<String>,
+    trip_short_name: Option<CompactString>,
+    service_date: Option<NaiveDate>,
+    last_stop: bool,
+    scheduled_trip_shape_id: Option<CompactString>,
+    pub final_station_name: Option<String>,
+}
+
+struct StopInfoResponse {
+    chateau: String,
+    stop_id: String,
+    stop_name: String,
+    stop_lat: f64,
+    stop_lon: f64,
+    stop_code: Option<String>,
+    level_id: Option<String>,
+    platform_code: Option<String>,
+    parent_station: Option<String>,
+    children_ids: Vec<String>,
+    timezone: String,
+    stop_name_translations: Option<HashMap<String, String>>,
+}
+
+pub struct OsmStationInfoForResponse {
+    pub osm_id: i64,
+    pub osm_type: String,
+    pub name: Option<String>,
+    pub name_translations: Option<serde_json::Value>,
+    pub station_type: Option<String>,
+    pub railway_tag: Option<String>,
+    pub mode_type: String,
+    pub lat: f64,
+    pub lon: f64,
+}
+
+pub struct DeparturesAtOsmStationDebug {
+    pub total_time_ms: u64,
+    pub etcd_connection_time_ms: u64,
+    pub db_connection_time_ms: u64,
+    pub initial_osm_query_ms: u64,
+    pub stop_data_fetch_ms: u64,
+    pub aspen_data_fetch_ms: u64,
+    pub event_generation_ms: u64,
+}
+```
 
 ## Shared behavior (both endpoints above)
 
