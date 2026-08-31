@@ -129,7 +129,7 @@ pub struct DeparturesAtOsmStationQuery {
 }
 ```
 
-###
+### Response
 
 - This file's `StopInfoResponse` is a separately-defined (structurally identical) type — but unlike the `/departures_at_stop` version, **`children_ids` actually is populated here**.
 - `StopEvent` here has one extra field vs. the other endpoint: `final_station_name: Option<string>` — populated **only** for chateau `"île~de~france~mobilités"` (Paris IDFM), `null` for every other chateau. A hardcoded, undocumented special case.
