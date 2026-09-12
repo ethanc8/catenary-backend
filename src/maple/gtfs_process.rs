@@ -1281,6 +1281,14 @@ pub async fn gtfs_process_feed(
 
             for trip in gtfs.trips.values_mut() {
                 trip.trip_short_name = Some(trip.id.clone());
+
+                // remove stop headsigns
+                for stoptime in trip.stop_times.iter_mut() {
+                    stoptime.stop_headsign = None;
+                }
+
+                // forces headsign recomputation downstream in Maple
+                trip.trip_headsign = None;
             }
 
             gtfs
